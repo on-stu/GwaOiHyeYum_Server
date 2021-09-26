@@ -3,12 +3,21 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
 import user from "./routes/user.js";
+import path from "path";
 
 const app = express();
+const __dirname = path.resolve();
+const root = path.join(__dirname, "/build");
 
 app.use(bodyParser.json({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
+app.use("/", express.static(root));
+
+app.get("*", (_, res) => {
+  res.sendFile("index.html", { root });
+});
+
 app.use("/auth", user);
 
 const CONNECTION_URL =
