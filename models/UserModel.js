@@ -10,6 +10,7 @@ const UserSchema = new mongoose.Schema(
     following: { type: Array },
     follower: { type: Array },
     classes: { type: Array },
+    schedules: { type: Array },
   },
   {
     collection: "users",
