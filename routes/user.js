@@ -7,11 +7,6 @@ const router = express.Router();
 
 const JWT_SECRET = "adfiaoendddczzncjnasjd5if23348u%%^$ufnnjsbbshdfknc";
 
-router.get("/", (req, res) => {
-  console.log(req);
-  res.send({ status: 200 });
-});
-
 router.post("/login", async (req, res) => {
   const {
     body: { username, password },
@@ -68,10 +63,8 @@ router.post("/register", async (req, res) => {
       nickname,
       usertype,
     });
-    console.log("successful with", response);
   } catch (error) {
     if (error.code === 11000) {
-      console.log("아이디가 이미 사용중입니다");
       return res.json({ status: "error", error: "아이디가 이미 사용중입니다" });
     }
   }
@@ -84,6 +77,19 @@ router.post("/getUserObj", async (req, res) => {
     const user = jwt.verify(token, JWT_SECRET);
     const userObj = await UserModel.findOne({ _id: user.id }).lean();
     res.send({ status: "success", user: userObj });
+  } catch (error) {
+    res.send({ status: "error", error });
+  }
+});
+
+router.post("/getUserProfile", async (req, res) => {
+  const {
+    body: { id },
+  } = req;
+
+  try {
+    const profile = await UserModel.find({ _id: id }).lean();
+    res.send({ status: "success", profile: profile });
   } catch (error) {
     res.send({ status: "error", error });
   }

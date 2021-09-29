@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import user from "./routes/user.js";
 import path from "path";
+import classes from "./routes/class.js";
 
 const app = express();
 const __dirname = path.resolve();
@@ -29,6 +30,7 @@ app.get("*", (_, res) => {
 });
 
 app.use("/auth", user);
+app.use("/class", classes);
 
 const CONNECTION_URL =
   "mongodb+srv://admin:ehdgoanf1!@youtubeclone.dbev2.mongodb.net/HyeYum?retryWrites=true&w=majority";
