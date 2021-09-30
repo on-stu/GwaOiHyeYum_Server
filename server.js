@@ -10,7 +10,7 @@ const app = express();
 const __dirname = path.resolve();
 const root = path.join(__dirname, "/build");
 
-app.use(bodyParser.json({ extended: true }));
+app.use(bodyParser.json({ extended: true, limit: 5000000 }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");

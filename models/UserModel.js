@@ -11,6 +11,8 @@ const UserSchema = new mongoose.Schema(
     follower: { type: Array },
     classes: { type: Array },
     schedules: { type: Array },
+    photoURL: { type: String },
+    selfIntroduction: { type: String, default: "" },
   },
   {
     collection: "users",
