@@ -2,6 +2,7 @@ import express from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import UserModel from "../models/UserModel.js";
+import ClassModel from "../models/ClassModel.js";
 
 const router = express.Router();
 
@@ -141,6 +142,70 @@ router.post("/updateUser", async (req, res) => {
     res.send({ status: "success", data: response });
   } catch (error) {
     res.send({ status: "error", error });
+  }
+});
+
+router.post("/changePassword", async (req, res) => {
+  const { token, password, newpassword } = req.body;
+  if (typeof newpassword !== "string") {
+    return res.json({ status: "error", error: "사용할 수 없는 비밀번호" });
+  }
+
+  if (newpassword.length < 5) {
+    return res.json({
+      status: "error",
+      error: "비밀번호가 너무 짧습니다. 비밀번호는 최소 6자여야 합니다.",
+    });
+  }
+
+  try {
+    const user = jwt.verify(token, JWT_SECRET);
+    const _id = user.id;
+    const userObj = await UserModel.findOne({ _id: user.id }).lean();
+    if (await bcrypt.compare(password, userObj.password)) {
+      const hashedPassword = await bcrypt.hash(newpassword, 10);
+
+      await UserModel.updateOne(
+        { _id },
+        {
+          $set: { password: hashedPassword },
+        }
+      );
+      return res.send({ status: "success" });
+    } else {
+      res.send({ status: "error", error: "비밀번호가 틀립니다." });
+    }
+  } catch (error) {
+    res.json({ status: "error", error });
+    console.log(error);
+  }
+});
+
+router.post("/deleteUser", async (req, res) => {
+  const {
+    body: { id, password, reason, quitAt },
+  } = req;
+  const user = await UserModel.findOne({ _id: id }).lean();
+
+  if (await bcrypt.compare(password, user.password)) {
+    console.log(user.classes);
+    if (user.usertype === "teacher") {
+      user.classes.map(async (item) => {
+        await ClassModel.updateOne(
+          { _id: item },
+          { $set: { teacherId: "Quit" } }
+        );
+      });
+    } else {
+      user.classes.map(async (item) => {
+        await ClassModel.updateOne(
+          { _id: item },
+          { $set: { teacherId: "Quit" } }
+        );
+      });
+    }
+  } else {
+    return res.json({ status: "error", error: "비밀번호가 틀립니다." });
   }
 });
 
