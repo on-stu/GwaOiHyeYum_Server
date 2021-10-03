@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import UserModel from "../models/UserModel.js";
 import ClassModel from "../models/ClassModel.js";
+import AdminModel from "../models/AdminModel.js";
 
 const router = express.Router();
 
@@ -98,7 +99,7 @@ router.post("/getUserProfile", async (req, res) => {
 
 router.post("/kakaoLogin", async (req, res) => {
   const {
-    body: { id, nickname },
+    body: { id, nickname, profile_image },
   } = req;
 
   const user = await UserModel.findOne({ username: id }).lean();
@@ -109,6 +110,7 @@ router.post("/kakaoLogin", async (req, res) => {
       nickname,
       socialLogin: "kakao",
       usertype: "notyet",
+      photoURL: profile_image,
     });
     const token = jwt.sign(
       {
@@ -186,26 +188,88 @@ router.post("/deleteUser", async (req, res) => {
     body: { id, password, reason, quitAt },
   } = req;
   const user = await UserModel.findOne({ _id: id }).lean();
-
-  if (await bcrypt.compare(password, user.password)) {
-    console.log(user.classes);
+  if (
+    (await bcrypt.compare(password, user.password)) ||
+    user.socialLogin == "kakao"
+  ) {
     if (user.usertype === "teacher") {
       user.classes.map(async (item) => {
         await ClassModel.updateOne(
           { _id: item },
-          { $set: { teacherId: "Quit" } }
+          { $set: { teacherId: "Quit", teacherNickname: "탈퇴한 회원" } }
         );
       });
+      await UserModel.deleteOne({ _id: id });
     } else {
       user.classes.map(async (item) => {
-        await ClassModel.updateOne(
-          { _id: item },
-          { $set: { teacherId: "Quit" } }
-        );
+        await ClassModel.updateOne({ _id: item }, { $pull: { students: id } });
       });
+      await UserModel.deleteOne({ _id: id });
     }
+    user.follower.map(async (follow) => {
+      await UserModel.updateOne(
+        { _id: follow },
+        {
+          $pull: { following: id },
+        }
+      );
+    });
+    user.following.map(async (follow) => {
+      await UserModel.updateOne(
+        { _id: follow },
+        {
+          $pull: { follwer: id },
+        }
+      );
+    });
+    AdminModel.create({
+      quitAt,
+      quitReason: reason,
+    });
+    res.send({ status: "success" });
   } else {
     return res.json({ status: "error", error: "비밀번호가 틀립니다." });
+  }
+});
+
+router.post("/followUser", async (req, res) => {
+  const {
+    body: { fromId, toId },
+  } = req;
+  try {
+    await UserModel.updateOne(
+      { _id: fromId },
+      { $addToSet: { following: [toId] } }
+    );
+    await UserModel.updateOne(
+      { _id: toId },
+      { $addToSet: { follower: [fromId] } }
+    );
+    res.send({ status: "success" });
+  } catch (error) {
+    res.send({ status: "error", error });
+  }
+});
+
+router.post("/followCancel", async (req, res) => {
+  const {
+    body: { fromId, toId },
+  } = req;
+  try {
+    await UserModel.updateOne({ _id: fromId }, { $pull: { following: toId } });
+    await UserModel.updateOne({ _id: toId }, { $pull: { follower: fromId } });
+    res.send({ status: "success" });
+  } catch (error) {
+    res.send({ status: "error", error });
+  }
+});
+router.post("/getUsers", async (req, res) => {
+  const users = req.body;
+  try {
+    const result = await UserModel.find({ _id: users }).lean();
+    res.send({ status: "success", users: result });
+  } catch (error) {
+    res.send({ status: "error", error });
   }
 });
 

@@ -26,8 +26,9 @@ router.post("/create", async (req, res) => {
     const { _id, teacherId } = response;
     const userResponse = await UserModel.updateOne(
       { _id: teacherId },
-      { $push: { classes: [_id] } }
+      { $addToSet: { classes: [_id] } }
     );
+
     res.send({ status: "success", response, userResponse });
   } catch (error) {
     res.send({ status: "error", error });
