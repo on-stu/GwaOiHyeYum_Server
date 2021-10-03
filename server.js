@@ -25,10 +25,6 @@ app.use(function (req, res, next) {
 app.use(cors());
 app.use("/", express.static(root));
 
-app.get("*", (_, res) => {
-  res.sendFile("index.html", { root });
-});
-
 app.use("/auth", user);
 app.use("/class", classes);
 
