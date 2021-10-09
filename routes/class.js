@@ -16,8 +16,12 @@ router.post("/getClass", async (req, res) => {
   const {
     body: { id },
   } = req;
-  const thisClass = await ClassModel.find({ _id: id }).lean();
-  res.send({ status: "success", thisClass });
+  try {
+    const thisClass = await ClassModel.find({ _id: id }).lean();
+    res.send({ status: "success", thisClass });
+  } catch (error) {
+    res.send({ status: "error", error });
+  }
 });
 
 router.post("/create", async (req, res) => {

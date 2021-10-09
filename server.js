@@ -2,9 +2,10 @@ import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
-import user from "./routes/user.js";
 import path from "path";
+import user from "./routes/user.js";
 import classes from "./routes/class.js";
+import quiz from "./routes/quiz.js";
 
 const app = express();
 const __dirname = path.resolve();
@@ -27,6 +28,7 @@ app.use("/", express.static(root));
 
 app.use("/auth", user);
 app.use("/class", classes);
+app.use("/quiz", quiz);
 
 const CONNECTION_URL =
   "mongodb+srv://admin:ehdgoanf1!@youtubeclone.dbev2.mongodb.net/HyeYum?retryWrites=true&w=majority";
