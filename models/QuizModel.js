@@ -10,6 +10,8 @@ const QuizSchema = new mongoose.Schema(
     addedTo: { type: Array },
     quiz: { type: Array, required: true },
     quizType: { type: String, required: true },
+    quizSolve: { type: Array },
+    quizIntroduction: { type: String },
   },
   {
     collection: "quizes",

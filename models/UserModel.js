@@ -12,6 +12,7 @@ const UserSchema = new mongoose.Schema(
     classes: { type: Array },
     schedules: { type: Array },
     photoURL: { type: String },
+    myQuizes: { type: Array },
     selfIntroduction: { type: String, default: "" },
   },
   {
