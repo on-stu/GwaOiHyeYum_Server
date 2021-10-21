@@ -71,4 +71,38 @@ router.post("/removeQuiz", async (req, res) => {
   }
 });
 
+router.post("/like", async (req, res) => {
+  const {
+    body: { quizId, userId },
+  } = req;
+  try {
+    const quizResponse = await QuizModel.updateOne(
+      { _id: quizId },
+      {
+        $addToSet: { likes: userId },
+      }
+    );
+    res.send({ status: "success", quizResponse });
+  } catch (error) {
+    res.send({ status: "error", error });
+  }
+});
+
+router.post("/dislike", async (req, res) => {
+  const {
+    body: { quizId, userId },
+  } = req;
+  try {
+    const quizResponse = await QuizModel.updateOne(
+      { _id: quizId },
+      {
+        $pull: { likes: userId },
+      }
+    );
+    res.send({ status: "success", quizResponse });
+  } catch (error) {
+    res.send({ status: "error", error });
+  }
+});
+
 export default router;
